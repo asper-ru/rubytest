@@ -26,10 +26,16 @@ data = Net::HTTP.get(uri)
 data.split("\n").grep(/ +open +[^ ]*#{ARGV[1]}/).each do |line|
   indice = line.split[2]
   puts (indice)
-  Thread.new do
+  #Thread.new do
     puts "Closing indice: #{indice}..."  
     uri = URI ( [ elastic_url, indice, '/close' ].join )
     puts "HTTP POST to uri: #{uri}"
-    puts Net::HTTP.post(uri)
-  end.join
+    sleep(3)
+    req = Net::HTTP::Post.new(uri)
+    sleep(1)
+    #res = Net::HTTP.post_form(uri)
+    #res = Net::HTTP.post_form(uri, 'q' => 'ruby', 'max' => '50')
+    puts "done!"
+    #puts res.body
+  #end.join
 end
