@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 #
-# Run script like './indices.rb elastic1 cars'
+# Run script like './indices.rb elastic1 cars' or ./indices.rb elastic0 cars'
 
 require 'net/http'
 require 'webrick'
@@ -16,26 +16,24 @@ Thread.new do
   server = WEBrick::HTTPServer.new(:Port => 9200, :DocumentRoot => [ARGV[0], ".txt"].join).start
 end
 
-puts 'waiting 1 second for web-server thread to be started...'
+puts 'Waiting 1 second for web-server thread to be started...'
 sleep (1)
-puts 'trying to connect and get the list'
+puts 'Trying to connect and get the list...'
 
 uri = URI ( [ elastic_url, "cat/indices?v" ].join )
 data = Net::HTTP.get(uri)
 
+puts 'Got the list! Processing further...'
+
 data.split("\n").grep(/ +open +[^ ]*#{ARGV[1]}/).each do |line|
   indice = line.split[2]
-  puts (indice)
-  #Thread.new do
-    puts "Closing indice: #{indice}..."  
+  #Thread.new do # uncomment if using new threads instead processes
+  child_pid = fork do # comment if using new threads instead processes
+    puts "Trying to close indice: #{indice}..."  
     uri = URI ( [ elastic_url, indice, '/close' ].join )
     puts "HTTP POST to uri: #{uri}"
-    sleep(3)
     req = Net::HTTP::Post.new(uri)
-    sleep(1)
-    #res = Net::HTTP.post_form(uri)
-    #res = Net::HTTP.post_form(uri, 'q' => 'ruby', 'max' => '50')
-    puts "done!"
-    #puts res.body
-  #end.join
+    puts "Indice #{indice} is closed!"
+  end  # comment if using new threads instead processes
+  #end.join uncomment if using new threads instead processes
 end
