@@ -1,0 +1,56 @@
+На сервере elasticsearch находятся индексы с логами, которые бывают отрытые или закрытые. Статус и список индексов можно посмотреть командой: 
+
+
+curl http://127.0.0.1:9200/_cat/indices?v
+
+
+пример вывода команды (в аттаче txt если форматирование уедет):
+
+
+health status index                                   uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+
+green  open   twapi-gadgets-2019.03.29                Tfkjh5EJRDO5Yzb2t1wJxw   1   1        147            0      406kb          104kb
+
+green  open   twapi-redirector-2019.03.29             ABfbaUs-QV2JEWYHGOHQtw   1   1        190            0    545.5kb        296.3kb
+
+green  open   twapi-passbook-2019.03.28               WBUHL0IgTTmuVoB_SZ8R4g   1   1      56065            0     15.8mb            8mb
+
+green  open   twapi-statistics-2019.03.28             i4L4tQEbS0aGlZjEjEze4w   1   1      67373            0     52.8mb         26.4mb
+
+green  open   twapi-cars-2019.03.28                   uDm6yva_RcCf1zTFza8Rrw   1   1     467081            0    128.3mb         64.1mb
+
+red    open   twapi-cars-2019.03.27                   uDm6yva_RcCf1zTFza8Rrw   1   1     467081            0    128.3mb         64.1mb
+
+green  closed twapi-cars-2019.03.26                   uDm6yva_RcCf1zTFza8Rrw   1   1     467081            0    128.3mb         64.1mb
+
+green  open   twapi-bundles-2019.03.28                yliXDA3CQfCpvBJpMFBYvw   1   1       3246            0      3.9mb          1.9mb
+
+green  open   twapi-reports-2019.03.28                PCaSXe8ER8uQ0uTPlAkdXA   1   1     221961            0     90.9mb         45.8mb
+
+green  open   nginxaccessjson-2019.03.28            0mCCQPwPRimBtOZnB2ixeA   1   1    1173000            0    867.3mb        436.3mb
+
+green  open   mongodbultra-2019.03.29                ScnNVnlQJiHdwDCRY7pqA   1   1    1668996            0    423.9mb        215.8mb
+
+green  open   elastalertstatusstatus                2Dgue87wT_-DSCH6OeHKFA   1   1    8911222            0      2.6gb          1.3gb
+
+green  open   nginxaccessjson_other-2019.03.29      FT5SvHpsQqWYli8N7wAagg   1   1     738866            0    742.6mb        364.6mb
+
+green  open   chef-2019.03.29                         -Z5j2MDiQkm-eNLnj4fGvw   1   1        952            0      1.6mb        823.3kb
+
+
+необходимо написать ruby-скрипт, который можно вызывать с одним параметром - имя индекса, этот скрипт должен получить список из localhost:9200, найти и закрыть все открытые индексы с этим именем за последнюю неделю (7 дней). Индекс закрывается запросом:
+
+
+curl -v -XPOST localhost:9200/имяиндекса/close
+
+т.е. например вызов скрипта:
+
+./script.rb cars
+
+
+из текста в примере должен будет пропустить все индексы кроме twapi-cars-2019.03.28 и сделать один http post запрос в localhost:9200/twapi-cars-2019.03.28/_close
+
+
+Условия: curl или wget в самом скрипте использовать можно, но будет лучше если продемонстрировать как можно написать скрипт без их использования
+
+Бонус: если найдено несколько индексов - сделать их одновременное закрытие в параллельных процессах или потоках.
